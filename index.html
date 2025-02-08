@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Comment Finder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-400 to-purple-500">
+    <div class="bg-white shadow-2xl rounded-lg p-8 w-96 text-center">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">YouTube Comment Finder</h1>
+        
+        <label class="block text-gray-700 font-semibold text-left">Video URL:</label>
+        <input type="text" id="videoUrl" class="w-full px-4 py-2 border rounded-lg mb-3 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Enter YouTube video URL">
+        
+        <label class="block text-gray-700 font-semibold text-left">Username:</label>
+        <input type="text" id="username" class="w-full px-4 py-2 border rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Enter username">
+        
+        <button id="submitButton" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-2 rounded-lg hover:opacity-90 transition duration-300">Find Comment</button>
+        
+        <div id="loader" class="hidden mt-4 flex justify-center">
+            <div class="animate-spin rounded-full h-6 w-6 border-t-2 border-blue-500"></div>
+        </div>
+        
+        <p id="error" class="text-red-500 text-sm mt-4 hidden"></p>
+        <p id="commentLink" class="text-green-600 text-sm mt-4"></p>
+    </div>
+    
+    <script>
+        document.getElementById("submitButton").addEventListener("click", async function () {
+            let videoUrl = document.getElementById('videoUrl').value.trim();
+            let username = "@" + document.getElementById('username').value.trim();
+            let errorText = document.getElementById('error');
+            let commentLinkText = document.getElementById('commentLink');
+            let loader = document.getElementById('loader');
+            
+            errorText.classList.add('hidden');
+            commentLinkText.innerText = "";
+            loader.classList.remove('hidden');
+            
+            if (!videoUrl || !username) {
+                errorText.innerText = "Both fields are required!";
+                errorText.classList.remove('hidden');
+                loader.classList.add('hidden');
+                return;
+            }
+
+            
+            let apiUrl = `https://cee6-2401-4900-1c60-6503-a582-1a7f-4cd6-3690.ngrok-free.app/find_comment/?video_url=${videoUrl}&username=${username}`;
+            
+            try {
+     let response = await fetch(apiUrl, {
+    method: "GET", 
+    mode: "cors",  // Ensures cross-origin requests work properly
+    headers: {
+        "ngrok-skip-browser-warning": "1"
+    }
+});
+
+                let data = await response.json();
+                
+                if (data.comment_link && data.comment_text) {
+                    commentLinkText.innerHTML = `<a href="${data.comment_link}" target="_blank" class="text-blue-600 underline font-semibold">View Comment</a>`;
+                } else {
+                    errorText.innerText = "Error fetching comment. Please try again.";
+                    errorText.classList.remove('hidden');
+                }
+            } catch (error) {
+                errorText.innerText = "Network error. Please try again.";
+                errorText.classList.remove('hidden');
+            } finally {
+                loader.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
